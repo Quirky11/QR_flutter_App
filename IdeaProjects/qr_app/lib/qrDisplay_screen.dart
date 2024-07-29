@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class QRDisplayScreen extends StatelessWidget {
   final String qrData;
@@ -11,7 +12,7 @@ class QRDisplayScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,
-        title: Text('QR Code Display'),
+        title: const Text('QR Code Display'),
       ),
       body: Center(
         child: Column(
@@ -22,10 +23,38 @@ class QRDisplayScreen extends StatelessWidget {
               version: QrVersions.auto,
               size: 200.0,
             ),
-            SizedBox(height: 20),
-            Text(
-              qrData,
-              style: TextStyle(fontSize: 30,fontStyle:FontStyle.italic,color: Colors.blueAccent ),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () async {
+                if (await canLaunchUrl(Uri.parse(qrData))) {
+                  await launchUrl(Uri.parse(qrData));
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Invalid URL'),
+                      content: const Text('Cannot launch the URL.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
+              child: Text(
+                qrData,
+                style: const TextStyle(
+                  fontSize: 20,
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.blue
+                ),
+              ),
             ),
           ],
         ),

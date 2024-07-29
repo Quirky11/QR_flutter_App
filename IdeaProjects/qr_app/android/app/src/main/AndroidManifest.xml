@@ -1,10 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.example.qr_app">
 
+    <!-- Add internet permission if not already present -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
             android:label="qr_app"
             android:name="${applicationName}"
-            android:icon="@mipmap/ic_launcher">
+            android:icon="@mipmap/launcher_icon">
 
         <activity
                 android:name=".MainActivity"
@@ -45,6 +48,18 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+
+        <!-- Add additional queries for web browsing -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
         </intent>
     </queries>
 </manifest>
