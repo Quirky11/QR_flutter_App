@@ -1,11 +1,10 @@
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:shopping_app/category.dart';
+import 'package:http/http.dart' as http;
 import 'categories.dart';
+import 'category.dart';
 import 'grocery_item.dart';
-import 'package:http/http.dart'as http;
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -21,30 +20,26 @@ class _NewItemState extends State<NewItem> {
   var _enteredName = '';
   var _enteredQuantity = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
-  var _isSending= false;
+  var _isSending = false;
 
   void _saveItem() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       setState(() {
-        _isSending= true;
+        _isSending = true;
       });
-      final url= Uri.https('shopping-app-b6a5e-default-rtdb.firebaseio.com','shopping_list.json');
-      final response= await http.post(
-          url,
-        headers: {
-            'Content-Type':'application/json'
-        },
-        body: json.encode(
-          {
+      final url = Uri.https('shopping-app-b6a5e-default-rtdb.firebaseio.com',
+          'shopping_list.json');
+      final response = await http.post(url,
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
             'name': _enteredName,
             'quantity': _enteredQuantity,
             'category': _selectedCategory.title,
-          }
-        )
-      );
-      final Map<String ,dynamic> resData= json.decode(response.body);
-      if(!context.mounted){
+            'timestamp': DateTime.now().toIso8601String(), // Add timestamp
+          }));
+      final Map<String, dynamic> resData = json.decode(response.body);
+      if (!context.mounted) {
         return;
       }
       Navigator.of(context).pop(
@@ -53,116 +48,147 @@ class _NewItemState extends State<NewItem> {
           name: _enteredName,
           quantity: _enteredQuantity,
           category: _selectedCategory,
+          timestamp: DateTime.now(), // Include timestamp
         ),
       );
     }
+  }
+
+  void _resetForm() {
+    _formKey.currentState?.reset();
+    setState(() {
+      _enteredName = '';
+      _enteredQuantity = 1;
+      _selectedCategory = categories[Categories.vegetables]!;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add a new item'),
+        title: const Text('Add a New Item'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                maxLength: 50,
-                decoration: const InputDecoration(
-                  label: Text('Name'),
-                ),
-                validator: (value) {
-                  if (value == null ||
-                      value.isEmpty ||
-                      value.trim().length <= 1 ||
-                      value.trim().length > 50) {
-                    return 'Must be between 1 and 50 characters.';
-                  }
-                  return null;
-                },
-                onSaved: (value) {
-                  // if (value == null) {
-                  //   return;
-                  // }
-                  _enteredName = value!;
-                },
-              ), // instead of TextField()
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+        padding: const EdgeInsets.all(16),
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        label: Text('Quantity'),
+                  TextFormField(
+                    maxLength: 50,
+                    decoration: InputDecoration(
+                      labelText: 'Item Name',
+                      prefixIcon: Icon(Icons.shopping_bag),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      keyboardType: TextInputType.number,
-                      initialValue: _enteredQuantity.toString(),
-                      validator: (value) {
-                        if (value == null ||
-                            value.isEmpty ||
-                            int.tryParse(value) == null ||
-                            int.tryParse(value)! <= 0) {
-                          return 'Must be a valid, positive number.';
-                        }
-                        return null;
-                      },
-                      onSaved: (value) {
-                        _enteredQuantity = int.parse(value!);
-                      },
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: DropdownButtonFormField(
-                      value: _selectedCategory,
-                      items: [
-                        for (final category in categories.entries)
-                          DropdownMenuItem(
-                            value: category.value,
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 16,
-                                  height: 16,
-                                  color: category.value.color,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(category.value.title),
-                              ],
-                            ),
-                          ),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedCategory = value!;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed:
-                      _isSending ? null : (){
-                      _formKey.currentState!.reset();
+                    validator: (value) {
+                      if (value == null ||
+                          value.isEmpty ||
+                          value.trim().length <= 1 ||
+                          value.trim().length > 50) {
+                        return 'Must be between 1 and 50 characters.';
+                      }
+                      return null;
                     },
-                    child: const Text('Reset'),
+                    onSaved: (value) {
+                      _enteredName = value!;
+                    },
                   ),
-                  ElevatedButton(
-                    onPressed: _isSending? null :_saveItem,
-                    child: const Text('Add Item'),
-                  )
+                  const SizedBox(height: 16),
+
+                  /// Quantity Field
+                  TextFormField(
+                    decoration: InputDecoration(
+                      labelText: 'Quantity',
+                      prefixIcon: Icon(Icons.numbers),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    keyboardType: TextInputType.number,
+                    initialValue: _enteredQuantity.toString(),
+                    validator: (value) {
+                      if (value == null ||
+                          value.isEmpty ||
+                          int.tryParse(value) == null ||
+                          int.tryParse(value)! <= 0) {
+                        return 'Must be a valid, positive number.';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _enteredQuantity = int.parse(value!);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  /// Category Dropdown
+                  DropdownButtonFormField<Category>(
+                    decoration: InputDecoration(
+                      labelText: 'Category',
+                      prefixIcon: Icon(Icons.category),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    value: _selectedCategory,
+                    items: categories.entries.map((category) {
+                      return DropdownMenuItem<Category>(
+                        value: category.value,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 16,
+                              height: 16,
+                              color: category.value.color,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(category.value.title),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategory = value!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Progress Indicator and Buttons
+                  if (_isSending)
+                    CircularProgressIndicator()
+                  else
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Reset Button
+                        TextButton(
+                          onPressed: _resetForm,
+                          child: const Text('Reset'),
+                        ),
+                        // Add Item Button
+                        ElevatedButton(
+                          onPressed: _saveItem,
+                          child: const Text('Add Item'),
+                        ),
+                      ],
+                    ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),

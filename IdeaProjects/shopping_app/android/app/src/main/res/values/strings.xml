@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Application Name -->
+    <string name="app_name">Shopping App</string>
+
+    <!-- Remove Firebase and Google Services Configuration -->
+    <!--
+    <string name="google_app_id">1:450984024699:android:f8fe0786ac2e792aaa60de</string>
+    <string name="google_api_key">AIzaSyDkHaii1RQgnI9LEAOHusz-U3nVQ7UiREE</string>
+    <string name="firebase_database_url">https://shopping-app-b6a5e-default-rtdb.firebaseio.com</string>
+    <string name="project_id">shopping-app-b6a5e</string>
+    -->
+</resources>

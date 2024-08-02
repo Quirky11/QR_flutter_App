@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'grocery_list.dart';
+import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
+import 'grocery list/grocery_list.dart'; // Ensure correct import path
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Ensures binding is ready before Firebase is initialized
+  await Firebase.initializeApp(); // Initialize Firebase
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
